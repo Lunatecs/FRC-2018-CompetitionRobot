@@ -75,7 +75,7 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		station = DriverStation.getInstance();
 		
-		m_chooser.addDefault("Default Auto", kDefaultAuto);
+		m_chooser.addDefault("Default Auto - Lifts and Lowers Intake, nothing else", kDefaultAuto);
 		m_chooser.addObject("Center Switch Auto", CenterSwitchAuto);
 		m_chooser.addObject("Ten Feet Foward Auto", TenFeetForwardAuto);
 		m_chooser.addObject("Shoot Cube Auto - Illegal", ShootCubeAuto);
@@ -174,23 +174,24 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void robotPeriodic() {
 		 SmartDashboard.putData("Our Encoder", this.leaderMiddleRightDrive);
-		 SmartDashboard.putData("Our Gyro", gyro);
-		 SmartDashboard.putBoolean("Drive Data", drive.isAlive());
+		 //SmartDashboard.putData("Our Gyro", gyro);
+		 //SmartDashboard.putBoolean("Drive Data", drive.isAlive());
 		 
-		 SmartDashboard.putString("Z Gyro", gyro.getAngle() + "");
+		 //SmartDashboard.putString("Z Gyro", gyro.getAngle() + "");
 		 
-		 SmartDashboard.putNumber("Output Voltage", leaderElevator.getMotorOutputVoltage());
+		 //SmartDashboard.putNumber("Output Voltage", leaderElevator.getMotorOutputVoltage());
+		 
 		 SmartDashboard.putNumber("Elevator Encoder:", leaderElevator.getSelectedSensorPosition(0));
 		 
-		 SmartDashboard.putData("Our Drive", drive);
+		 //SmartDashboard.putData("Our Drive", drive);
 		 
-		 SmartDashboard.putBoolean("Fwd Solenoid Intake", intakeSolenoid.isFwdSolenoidBlackListed());
-		 SmartDashboard.putBoolean("Rev Solenoid Intake", intakeSolenoid.isRevSolenoidBlackListed());
-		 SmartDashboard.putString("Intake SoleNoid",intakeSolenoid.get() +"");
-		 SmartDashboard.putString("Right Postion", this.leaderMiddleRightDrive.getSelectedSensorPosition(0) + "");
-		 SmartDashboard.putString("Left Postion", this.leaderMiddleLeftDrive.getSelectedSensorPosition(0) + "");
-		 SmartDashboard.putBoolean("Elevator Buttom Sensor", elevatorButtomLimitSwitch.get());
-		 SmartDashboard.putBoolean("Elevator Top Sensor", elevatorTopLimitSwitch.get());
+		 //SmartDashboard.putBoolean("Fwd Solenoid Intake", intakeSolenoid.isFwdSolenoidBlackListed());
+		 //SmartDashboard.putBoolean("Rev Solenoid Intake", intakeSolenoid.isRevSolenoidBlackListed());
+		 //SmartDashboard.putString("Intake SoleNoid",intakeSolenoid.get() +"");
+		 //SmartDashboard.putString("Right Postion", this.leaderMiddleRightDrive.getSelectedSensorPosition(0) + "");
+		 //SmartDashboard.putString("Left Postion", this.leaderMiddleLeftDrive.getSelectedSensorPosition(0) + "");
+		 //SmartDashboard.putBoolean("Elevator Buttom Sensor", elevatorButtomLimitSwitch.get());
+		 //SmartDashboard.putBoolean("Elevator Top Sensor", elevatorTopLimitSwitch.get());
 		 
 		 if(elevatorButtomLimitSwitch.get()) {
 			 this.leaderElevator.setSelectedSensorPosition(0, 0, 10);
@@ -288,51 +289,30 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		drive(joyStick.getRawAxis(1), joyStick.getRawAxis(4));
 		
-		
+		//green button
 		if(this.opJoyStick.getRawButton(1)) {
 			elevatorCommand.cancel();
-			elevatorCommand.setSetPoint(ElevatorCommand.SCALE_DOWN_SET_POINT);
+			elevatorCommand.setSetPoint(ElevatorCommand.BOTTOM_SET_POINT);
 			elevatorCommand.start();
 		} 
 		
+		//red button
 		if(this.opJoyStick.getRawButton(2)) {
-			elevatorCommand.cancel();
-			elevatorCommand.setSetPoint(ElevatorCommand.SCALE_EVEN_SET_POINT);
-			elevatorCommand.start();
-		} 
-		
-		if(this.opJoyStick.getRawButton(3)) {
 			elevatorCommand.cancel();
 			elevatorCommand.setSetPoint(ElevatorCommand.SWITCH_SET_POINT);
 			elevatorCommand.start();
 		} 
 		
-		if(this.opJoyStick.getRawButton(4)) {
+		//blue button
+		if(this.opJoyStick.getRawButton(3)) {
 			elevatorCommand.cancel();
-			elevatorCommand.setSetPoint(ElevatorCommand.SCALE_UP_SET_POINT);
+			elevatorCommand.setSetPoint(ElevatorCommand.SCALE_EVEN_SET_POINT);
 			elevatorCommand.start();
 		} 
 
-		if(this.opJoyStick.getRawButton(6)) {
-			elevatorCommand.cancel();
-			elevatorCommand.setSetPoint(ElevatorCommand.BOTTOM_SET_POINT);
-			elevatorCommand.start();
-		} 
-        /*
-		if(this.joyStick.getRawButton(5)) {
-			if(piston) {
-				this.intakeSolenoid.set(DoubleSolenoid.Value.kForward);
-			} else {
-				this.intakeSolenoid.set(DoubleSolenoid.Value.kReverse);
-			}
-			piston = !piston;
-			this.intakeSolenoid.set(DoubleSolenoid.Value.kOff);
-		} 
-		*/
-		
-		if(this.joyStick.getRawButton(1)) {
+		if(this.opJoyStick.getRawButton(5)) {
 			this.intakeSolenoid.set(DoubleSolenoid.Value.kForward);
-		} else if(this.joyStick.getRawButton(2)) {
+		} else if(this.opJoyStick.getRawButton(6)) {
 			this.intakeSolenoid.set(DoubleSolenoid.Value.kReverse);
 		} else {
 			this.intakeSolenoid.set(DoubleSolenoid.Value.kOff);
@@ -343,6 +323,12 @@ public class Robot extends IterativeRobot {
 			
 		} else if(this.opJoyStick.getRawAxis(3)>0) {
 			this.leaderIntake.set(ControlMode.PercentOutput, -opJoyStick.getRawAxis(3));
+		
+		} else if(this.opJoyStick.getRawButton(4)) {
+			this.leaderIntake.set(ControlMode.PercentOutput, .5);
+			
+		} else if(this.opJoyStick.getRawButton(8)) {
+			this.leaderIntake.set(ControlMode.PercentOutput, 1.0);
 			
 		} else {
 			this.leaderIntake.set(ControlMode.PercentOutput, 0);
@@ -385,15 +371,15 @@ public class Robot extends IterativeRobot {
 			double powerLeft = forward + (correcting * (double)diffRight);
 			double powerRight = forward + (correcting * (double)diffLeft);
 			
-			SmartDashboard.putString("Diff L R", diffLeft + " " + diffRight);
-			SmartDashboard.putString("Power L R", powerLeft + " " + powerRight);
+			//SmartDashboard.putString("Diff L R", diffLeft + " " + diffRight);
+			//SmartDashboard.putString("Power L R", powerLeft + " " + powerRight);
 			
 			drive.tankDrive(powerLeft, powerRight);
 		} else {
 			drive.arcadeDrive(forward, turn);
 			startForward = true;
 		}
-		SmartDashboard.putBoolean("start forward", startForward);
+		//SmartDashboard.putBoolean("start forward", startForward);
 	}
 	
 	/**
