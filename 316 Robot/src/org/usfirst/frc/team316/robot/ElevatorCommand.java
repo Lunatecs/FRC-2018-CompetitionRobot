@@ -17,7 +17,7 @@ public class ElevatorCommand extends Command {
 	
 	
 	public static final int BOTTOM_SET_POINT = 0;
-	public static final int SWITCH_SET_POINT = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * 21.0);
+	public static final int SWITCH_SET_POINT = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * 42.0);
 	public static final int SCALE_UP_SET_POINT = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * RobotConstants.TOP_ELEVATOR_HEIGHT);
 	public static final int SCALE_EVEN_SET_POINT = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * 65.0);
 	public static final int SCALE_DOWN_SET_POINT = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * 53.0);

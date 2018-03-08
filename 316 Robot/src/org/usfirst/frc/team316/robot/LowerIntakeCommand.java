@@ -16,7 +16,8 @@ public class LowerIntakeCommand extends Command {
 	
 	@Override
 	protected void execute() {
-		this.intake.set(DoubleSolenoid.Value.kReverse);
+		//this.intake.set(DoubleSolenoid.Value.kReverse);
+		this.intake.set(DoubleSolenoid.Value.kForward);
 		//this.intake.set(DoubleSolenoid.Value.kOff);
 		isFinished = true;
 	}

@@ -64,6 +64,7 @@ public class Robot extends IterativeRobot {
 	
 	DigitalInput elevatorButtomLimitSwitch;
 	DigitalInput elevatorTopLimitSwitch;
+	DigitalInput elevatorTopLimitSwitch2;
 	DoubleSolenoid intakeSolenoid;
 	
 
@@ -75,7 +76,7 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		station = DriverStation.getInstance();
 		
-		m_chooser.addDefault("Default Auto - Lifts and Lowers Intake, nothing else", kDefaultAuto);
+		m_chooser.addDefault("Default Auto - Sit there like nobody's business", kDefaultAuto);
 		m_chooser.addObject("Center Switch Auto", CenterSwitchAuto);
 		m_chooser.addObject("Ten Feet Foward Auto", TenFeetForwardAuto);
 		m_chooser.addObject("Shoot Cube Auto - Illegal", ShootCubeAuto);
@@ -154,6 +155,7 @@ public class Robot extends IterativeRobot {
 		 
 		 elevatorButtomLimitSwitch = new DigitalInput(0);
 		 elevatorTopLimitSwitch = new DigitalInput(1);
+		 elevatorTopLimitSwitch2 = new DigitalInput(2);
 		 
 		 System.out.println("START DISPLAYING OUTPUT");
 		 
@@ -188,10 +190,12 @@ public class Robot extends IterativeRobot {
 		 //SmartDashboard.putBoolean("Fwd Solenoid Intake", intakeSolenoid.isFwdSolenoidBlackListed());
 		 //SmartDashboard.putBoolean("Rev Solenoid Intake", intakeSolenoid.isRevSolenoidBlackListed());
 		 //SmartDashboard.putString("Intake SoleNoid",intakeSolenoid.get() +"");
-		 //SmartDashboard.putString("Right Postion", this.leaderMiddleRightDrive.getSelectedSensorPosition(0) + "");
-		 //SmartDashboard.putString("Left Postion", this.leaderMiddleLeftDrive.getSelectedSensorPosition(0) + "");
-		 //SmartDashboard.putBoolean("Elevator Buttom Sensor", elevatorButtomLimitSwitch.get());
+		 SmartDashboard.putString("Right Drive Postion", this.leaderMiddleRightDrive.getSelectedSensorPosition(0) + "");
+		 SmartDashboard.putString("Left Drive Postion", this.leaderMiddleLeftDrive.getSelectedSensorPosition(0) + "");
+		 SmartDashboard.putBoolean("Elevator Buttom Sensor", elevatorButtomLimitSwitch.get());
 		 //SmartDashboard.putBoolean("Elevator Top Sensor", elevatorTopLimitSwitch.get());
+		 
+		 SmartDashboard.putBoolean("Limit Switch Top", this.elevatorTopLimitSwitch2.get());
 		 
 		 if(elevatorButtomLimitSwitch.get()) {
 			 this.leaderElevator.setSelectedSensorPosition(0, 0, 10);
@@ -226,22 +230,23 @@ public class Robot extends IterativeRobot {
 		move = new CommandGroup();
 		//move.addParallel(firstCommand);
 		double minPower = .4;
-		move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));
-		move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+		
 		switch(m_autoSelected) {
 			case CenterSwitchAuto:
+				move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+				move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));
 				if (allianceSwitch == 'R') {
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 36.0, .75, minPower));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 45.0, .5, minPower));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 45.0, .6, minPower));
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 54.0, .5, .1, .0001, 0.00001, 0.0, 150));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -50.0, .5, minPower));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -50.0, .6, minPower));
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 40.0, .5, minPower, .00016, 0.00001, 0.0, 150));
 					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
 				} else if (allianceSwitch == 'L') {
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 36.0, .75, minPower));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -45.0, .5, minPower));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -45.0, .6, minPower));
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 84.0, .75, minPower, .00016, 0.0, 0.0, 150));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 45.0, .5, minPower));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 45.0, .6, minPower));
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 6.0, .75, minPower, .00016, 0.0, 0.0, 150));
 					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
 				}
@@ -250,7 +255,8 @@ public class Robot extends IterativeRobot {
 				move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 120.0, .75, minPower, .00004, 0.0000004, 0.000004, 150));
 				break;
 			case ShootCubeAuto:
-				//move.addParallel(new ElevatorCommand(this.leaderElevator,this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));
+				move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+				move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));				
 				move.addSequential(new WaitCommand(3000));
 				move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
 			default:
@@ -328,7 +334,7 @@ public class Robot extends IterativeRobot {
 			this.leaderIntake.set(ControlMode.PercentOutput, .5);
 			
 		} else if(this.opJoyStick.getRawButton(8)) {
-			this.leaderIntake.set(ControlMode.PercentOutput, 1.0);
+			this.leaderIntake.set(ControlMode.PercentOutput, .25);
 			
 		} else {
 			this.leaderIntake.set(ControlMode.PercentOutput, 0);
@@ -338,7 +344,13 @@ public class Robot extends IterativeRobot {
 			this.leaderElevator.set(ControlMode.PercentOutput, 0);
 		} else if(Math.abs(this.opJoyStick.getRawAxis(1)) > .2) {
 			elevatorCommand.cancel();
+			/*if(!this.elevatorTopLimitSwitch2.get() && this.opJoyStick.getRawAxis(1) < -.2) {
+				 this.leaderElevator.set(ControlMode.Position, this.leaderElevator.getSelectedSensorPosition(0));
+			 } else {
+				 this.leaderElevator.set(ControlMode.PercentOutput, -this.opJoyStick.getRawAxis(1));
+			 }*/
 			this.leaderElevator.set(ControlMode.PercentOutput, -this.opJoyStick.getRawAxis(1));
+			
 		}
 		/*if(Math.abs(this.opJoyStick.getRawAxis(1))>.2) {
 			this.leaderElevator.set(ControlMode.PercentOutput, -this.opJoyStick.getRawAxis(1));
