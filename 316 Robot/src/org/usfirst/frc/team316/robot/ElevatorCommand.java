@@ -43,11 +43,11 @@ public class ElevatorCommand extends Command {
 		
 		SmartDashboard.putNumber("Elevator Position:", this.setPoint);
 		
-		if(top.get() && this.setPoint == SCALE_UP_SET_POINT ) {
+		/*if(top.get() && this.setPoint == SCALE_UP_SET_POINT ) {
 			motor.set(ControlMode.Position, motor.getSelectedSensorPosition(0));
 			this.isFinished = true;
 			return;
-		}
+		}*/
 		
 		if(bottom.get() && this.setPoint == BOTTOM_SET_POINT ) {
 			motor.setSelectedSensorPosition(0, 0, 10);

@@ -19,7 +19,7 @@ public class RobotConstants {
 	public static final double TICS_PER_DEGREE = (ROBOT_CIRCUMFERENCE * TICS_PER_INCH)/360.0;
 	
 	//public static final double TOP_ELEVATOR_TICS = 27000;
-	public static final double TOP_ELEVATOR_TICS = 26000;
+	public static final double TOP_ELEVATOR_TICS = 30000;
 	public static final double TOP_ELEVATOR_HEIGHT = 73;
 	public static final double TICS_PER_ELEVATOR_INCH = TOP_ELEVATOR_TICS/TOP_ELEVATOR_HEIGHT;
 }

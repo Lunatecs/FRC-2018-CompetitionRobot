@@ -116,7 +116,7 @@ public class MoveCommand extends Command {
 		
 		int diffRight = average - right;
 		int diffLeft = average - left;
-		double correcting = .00004;
+		double correcting = .00005;
 		
 		double powerLeft = power + (correcting * (double)diffRight);
 		double powerRight = power + (correcting * (double)diffLeft);
