@@ -18,6 +18,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -45,6 +46,8 @@ public class Robot extends IterativeRobot {
 	private static final String CenterSwitchAuto = "Center Switch Auto";
 	private static final String RightSideScale = "Right Side Scale";
 	private static final String LeftSideScale = "Left Side Scale";
+	private static final String RightSideSwitch = "Switch Right Side";
+	private static final String LeftSideSwitch = "Switch Left Side";
 	private static final String TenFeetForwardAuto = "Ten Forward Auto";
 	private static final String ShootCubeAuto = "Shoot Cube Auto";
 	private static final String TurnAuto = "Turn Auto";
@@ -70,12 +73,12 @@ public class Robot extends IterativeRobot {
 	
 	DigitalInput elevatorButtomLimitSwitch;
 	DigitalInput elevatorTopLimitSwitch;
-	DigitalInput elevatorTopLimitSwitch2;
+	//DigitalInput elevatorTopLimitSwitch2;
 	DoubleSolenoid intakeSolenoid;
 	DoubleSolenoid grabberSolenoid;
 	
 	Ultrasonic rearRangeFinder;
-	Ultrasonic frontRangeFinder;
+	//Ultrasonic frontRangeFinder;
 	//AnalogGyro gyro2;
 	
 	//MaxbotixUltrasonic finder;
@@ -94,10 +97,12 @@ public class Robot extends IterativeRobot {
 		m_chooser.addObject("Center Switch Auto", CenterSwitchAuto);
 		m_chooser.addObject("Right Side Scale", RightSideScale);
 		m_chooser.addObject("Left Side Scale", LeftSideScale);
+		m_chooser.addObject("Switch Right Side", RightSideSwitch);
+		m_chooser.addObject("Switch Left Side", LeftSideSwitch);
 		m_chooser.addObject("Ten Feet Foward Auto", TenFeetForwardAuto);
-		m_chooser.addObject("Shoot Cube Auto - Illegal", ShootCubeAuto);
-		m_chooser.addObject("Turn Auto - Gyro Turn Testing", TurnAuto);
-		m_chooser.addObject("Forward Range", ForwardRange);
+		//m_chooser.addObject("Shoot Cube Auto - Illegal", ShootCubeAuto);
+		//m_chooser.addObject("Turn Auto - Gyro Turn Testing", TurnAuto);
+		//m_chooser.addObject("Forward Range", ForwardRange);
 		SmartDashboard.putData("Auto choices", m_chooser);
 		
 		leaderMiddleRightDrive = new WPI_TalonSRX(15);
@@ -174,7 +179,7 @@ public class Robot extends IterativeRobot {
 		 
 		 elevatorButtomLimitSwitch = new DigitalInput(0);
 		 elevatorTopLimitSwitch = new DigitalInput(1);
-		 elevatorTopLimitSwitch2 = new DigitalInput(2);
+		 //elevatorTopLimitSwitch2 = new DigitalInput(2);
 		 
 		 System.out.println("START DISPLAYING OUTPUT");
 		 
@@ -203,7 +208,7 @@ public class Robot extends IterativeRobot {
 			 //System.out.println("gyro");
 			 e.printStackTrace();
 		 }
-		
+		/*
 		 try {
 				this.frontRangeFinder = new Ultrasonic(6,7);
 				
@@ -212,6 +217,7 @@ public class Robot extends IterativeRobot {
 				System.out.println(e.getMessage());
 				 e.printStackTrace();
 			} 
+			*/
 		try {
 			this.rearRangeFinder = new Ultrasonic(8,9);
 			
@@ -224,13 +230,15 @@ public class Robot extends IterativeRobot {
 		//boolean _use_units, double _min_voltage, double _max_voltage, double _min_distance, double _max_distance
 		//finder = new MaxbotixUltrasonic(2, true, .293, 4.885, 11.811,196.85);  
 		//in = new AnalogInput(2);
-		this.frontRangeFinder.setAutomaticMode(true);
+		//this.frontRangeFinder.setAutomaticMode(true);
 		this.rearRangeFinder.setAutomaticMode(true);
+		
+		//CameraServer.getInstance().startAutomaticCapture();
 	}
 
 	@Override
 	public void robotPeriodic() {
-		 SmartDashboard.putData("Our Encoder", this.leaderMiddleRightDrive);
+		 //SmartDashboard.putData("Our Encoder", this.leaderMiddleRightDrive);
 		 //SmartDashboard.putData("Our Gyro", gyro);
 		 //SmartDashboard.putBoolean("Drive Data", drive.isAlive());
 		 
@@ -250,36 +258,16 @@ public class Robot extends IterativeRobot {
 		 SmartDashboard.putBoolean("Elevator Buttom Sensor", elevatorButtomLimitSwitch.get());
 		 SmartDashboard.putBoolean("Elevator Top Sensor", elevatorTopLimitSwitch.get());
 		 
-		 SmartDashboard.putBoolean("Limit Switch Top", this.elevatorTopLimitSwitch2.get());
-		 //if(gyro2!=null) {
-		//	 SmartDashboard.putData("Gyro2 Data", gyro2);
-		// 	 SmartDashboard.putNumber("Gyro2 Angle", gyro2.getAngle());
-		// }
+		
 		 
 		 if(this.rearRangeFinder!=null) {
 			 //this.rearRangeFinder.ping();
 			 SmartDashboard.putData("Rear Range Finder Data", this.rearRangeFinder);
-			 SmartDashboard.putNumber("Rear Range Finder Inches", this.rearRangeFinder.getRangeInches());
 			 SmartDashboard.putBoolean("Rear Good", true);
 		 } else {
 			 SmartDashboard.putBoolean("Rear Good", false);
 		 }
-		 
-		 if(this.frontRangeFinder!=null) {
-			 //this.frontRangeFinder.ping();
-			 SmartDashboard.putData("Front Range Finder Data", this.frontRangeFinder);
-			 SmartDashboard.putNumber("Front Range Finder Inches", this.frontRangeFinder.getRangeInches());
-			 SmartDashboard.putBoolean("Front Good", true);
-		 } else {
-			 SmartDashboard.putBoolean("Front Good", false);
-		 }
-		 
-		 
-		 //if(this.finder!=null) {
-		//	 SmartDashboard.putNumber("Analog Finder", finder.GetRangeInInches());
-		// }
-		 
-		 //SmartDashboard.putNumber("Analog in", in.getVoltage());
+
 		 
 		 if(elevatorButtomLimitSwitch.get()) {
 			 this.leaderElevator.setSelectedSensorPosition(0, 0, 10);
@@ -413,6 +401,36 @@ public class Robot extends IterativeRobot {
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 120.0, .75, minPower, .00004, 0.0000004, 0.000004, 150));
 				}
 				break;
+			case RightSideSwitch:
+				if(allianceSwitch == 'R') {
+					SmartDashboard.putString("Scale Switch", "Switch");
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 154.0, .75, minPower, .00007, 0.0, 0.0, 150));
+					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -85.0, .6, .6));
+					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
+					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));			
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 49.0, .5, .5, true));		
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .7, 500));
+				} else {
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 120.0, .75, minPower, .00004, 0.0000004, 0.000004, 150));
+				}
+				break;
+			case LeftSideSwitch:
+				if(allianceSwitch == 'L') {
+					SmartDashboard.putString("Scale Switch", "Switch");
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 154.0, .75, minPower, .00007, 0.0, 0.0, 150));
+					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
+					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
+					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));			
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 49.0, .5, .3, true));		
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .7, 500));
+				} else {
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 120.0, .75, minPower, .00004, 0.0000004, 0.000004, 150));
+				}
+				break;
 			case TenFeetForwardAuto:
 				move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 120.0, .75, minPower, .00004, 0.0000004, 0.000004, 150));
 				break;
@@ -428,7 +446,7 @@ public class Robot extends IterativeRobot {
 				//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
 				break;
 			case ForwardRange:	
-				move.addSequential(new RangeFinderMoveCommand(this.frontRangeFinder, this.drive, 22.0, .5, .3, false));
+				//move.addSequential(new RangeFinderMoveCommand(this.frontRangeFinder, this.drive, 22.0, .5, .3, false));
 				break;
 			default:
 		}
@@ -512,7 +530,7 @@ public class Robot extends IterativeRobot {
 			this.leaderIntake.set(ControlMode.PercentOutput, 0);
 		}
 		
-		if(Math.abs(this.opJoyStick.getRawAxis(1)) < .2 && !elevatorCommand.isRunning()) {
+		if(Math.abs(this.opJoyStick.getRawAxis(1)) < .2 && !elevatorCommand.isRunning() || (this.elevatorTopLimitSwitch.get() && this.opJoyStick.getRawAxis(1) < .2)) {
 			this.leaderElevator.set(ControlMode.PercentOutput, 0);
 		} else if(Math.abs(this.opJoyStick.getRawAxis(1)) > .2) {
 			elevatorCommand.cancel();
@@ -521,8 +539,11 @@ public class Robot extends IterativeRobot {
 			 } else {
 				 this.leaderElevator.set(ControlMode.PercentOutput, -this.opJoyStick.getRawAxis(1));
 			 }*/
-			this.leaderElevator.set(ControlMode.PercentOutput, -this.opJoyStick.getRawAxis(1));
-			
+			if(this.leaderElevator.getSelectedSensorPosition(0) > ElevatorCommand.SCALE_UP_SET_POINT && this.opJoyStick.getRawAxis(1) < -.2) {
+				this.leaderElevator.set(ControlMode.PercentOutput, .25);
+			} else {
+				this.leaderElevator.set(ControlMode.PercentOutput, -this.opJoyStick.getRawAxis(1));
+			}
 		}
 		/*if(Math.abs(this.opJoyStick.getRawAxis(1))>.2) {
 			this.leaderElevator.set(ControlMode.PercentOutput, -this.opJoyStick.getRawAxis(1));
