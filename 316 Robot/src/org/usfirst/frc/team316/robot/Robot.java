@@ -325,24 +325,26 @@ public class Robot extends IterativeRobot {
 				if (allianceSwitch == 'R') {
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 36.0, .75, minPower));
 					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 45.0, .6, minPower));
-					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 58.0, .5, .1, .0001, 0.00001, 0.0, 150));
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 56.0, .5, .1, .0001, 0.00001, 0.0, 150));
 					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -48.0, .5, minPower));
-					if(this.frontRangeFinder!=null) {
-						move.addSequential(new RangeFinderMoveCommand(this.frontRangeFinder, this.drive, 10.0, .5, .3, .0334, .000334, .00334, 2, false));
-					} else {
-						move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 40.0, .5, minPower, .00016, 0.00001, 0.0, 150));
-					}
+					//if(this.frontRangeFinder!=null) {
+					//	move.addSequential(new RangeFinderMoveCommand(this.frontRangeFinder, this.drive, 10.0, .5, .3, .0334, .000334, .00334, 2, false));
+					//} else {
+					//	move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 40.0, .5, minPower, .00016, 0.00001, 0.0, 150));
+					//}
+					move.addSequential(new TimeMoveCommand(1000,drive));
 					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
 				} else if (allianceSwitch == 'L') {
-					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 36.0, .75, minPower));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -45.0, .6, minPower));
-					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 84.0, .5, minPower, .0001, 0.0, 0.0, 150));
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 28.0, .75, minPower));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -48.0, .6, minPower));
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 80.0, .5, minPower, .0001, 0.0, 0.0, 150));
 					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 45.0, .5, minPower));
-					if(this.frontRangeFinder!=null) {
-						move.addSequential(new RangeFinderMoveCommand(this.frontRangeFinder, this.drive, 10.0, .5, .3, false, true));
-					} else {
-						move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 6.0, .75, minPower, .00016, 0.0, 0.0, 150));
-					}
+					//if(this.frontRangeFinder!=null) {
+					//	move.addSequential(new RangeFinderMoveCommand(this.frontRangeFinder, this.drive, 10.0, .5, .3, false, true));
+					//} else {
+					//	move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 6.0, .75, minPower, .00016, 0.0, 0.0, 150));
+					//}
+					move.addSequential(new TimeMoveCommand(1000,drive));
 					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
 				}
 				break;
@@ -351,29 +353,42 @@ public class Robot extends IterativeRobot {
 					SmartDashboard.putString("Scale Switch", "Scale");
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 288.0, .75, minPower, .00007, 0.0, 0.0, 150));
 					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -90.0, .6, .6));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -85.0, .6, .6));
 					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
-					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 20.0, .5, .3, 0.05, .0005, .005, 1, true));
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 23.0, .5, .4, 0.05, .0005, .005, 1, true));
 					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));			
-					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 30.0, .5, .3, true));		
-					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .9, 500));
+					move.addSequential(new WaitCommand(300));
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 30.0, .5, .4, true));		
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .8, 500));
 				} else if(allianceSwitch == 'R') {
 					SmartDashboard.putString("Scale Switch", "Switch");
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 154.0, .75, minPower, .00007, 0.0, 0.0, 150));
 					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -90.0, .6, .6));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -85.0, .6, .6));
 					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
 					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));			
-					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 49.0, .5, .3, true));		
-					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .9, 500));
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 49.0, .5, .5, true));		
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .7, 500));
 				} else {
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 120.0, .75, minPower, .00004, 0.0000004, 0.000004, 150));
 				}
 				break;
 			case LeftSideScale:
 				if(allianceScale == 'L') {
+					SmartDashboard.putString("Scale Switch", "Scale");
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 288.0, .75, minPower, .00007, 0.0, 0.0, 150));
+					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
+					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 23.0, .5, .4, 0.05, .0005, .005, 1, true));
+					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));			
+					move.addSequential(new WaitCommand(300));
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 30.0, .5, .4, true));		
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .8, 500));
+					/*
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 288.0, .75, minPower, .00007, 0.0, 0.0, 150));
 					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
 					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 90.0, .6, .6));
@@ -382,17 +397,18 @@ public class Robot extends IterativeRobot {
 					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));			
 					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 30.0, .5, .3, true));		
-					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .9, 500));
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .7, 500));
+					*/
 				} else if(allianceSwitch == 'L') {
 					SmartDashboard.putString("Scale Switch", "Switch");
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 154.0, .75, minPower, .00007, 0.0, 0.0, 150));
 					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 90.0, .6, .6));
+					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
 					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
 					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));			
 					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 49.0, .5, .3, true));		
-					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .9, 500));
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .7, 500));
 				} else {
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 120.0, .75, minPower, .00004, 0.0000004, 0.000004, 150));
 				}
@@ -466,9 +482,9 @@ public class Robot extends IterativeRobot {
 		} 
 
 		//red button
-		if(this.opJoyStick.getRawButton(2)) {
+		if(this.opJoyStick.getRawButton(3)) {
 			this.grabberSolenoid.set(DoubleSolenoid.Value.kForward);
-		} else if(this.opJoyStick.getRawButton(3)) {
+		} else if(this.opJoyStick.getRawButton(2)) {
 			this.grabberSolenoid.set(DoubleSolenoid.Value.kReverse);
 		} else {
 			this.grabberSolenoid.set(DoubleSolenoid.Value.kOff);
