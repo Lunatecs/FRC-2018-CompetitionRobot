@@ -39,6 +39,9 @@ public class ElevatorCommand extends Command {
 	}
 	
 	
+	protected void end() {
+	}
+	
 	protected void execute() {
 		
 		SmartDashboard.putNumber("Elevator Position:", this.setPoint);
