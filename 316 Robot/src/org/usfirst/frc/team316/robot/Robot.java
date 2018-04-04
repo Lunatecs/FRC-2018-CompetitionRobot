@@ -46,6 +46,7 @@ public class Robot extends IterativeRobot {
 	private static final String LeftSideScale = "Left Side Scale";
 	private static final String RightSideSwitch = "Switch Right Side";
 	private static final String LeftSideSwitch = "Switch Left Side";
+	private static final String LeftSideCrossScale = "Left Side Cross Scale";
 	private static final String TenFeetForwardAuto = "Ten Forward Auto";
 	private static final String ShootCubeAuto = "Shoot Cube Auto";
 	private static final String TurnAuto = "Turn Auto";
@@ -63,7 +64,10 @@ public class Robot extends IterativeRobot {
 	
 	private WPI_TalonSRX leaderMiddleRightDrive;
 	private WPI_TalonSRX leaderMiddleLeftDrive;
-	
+	WPI_VictorSPX followerFrontRightDrive;
+	WPI_VictorSPX followerBackRightDrive;
+	WPI_VictorSPX followerFrontLeftDrive;
+	WPI_VictorSPX followerBackLeftDrive;	
 	private TalonSRX leaderElevator;
 	
 	private VictorSPX leaderIntake;
@@ -97,6 +101,7 @@ public class Robot extends IterativeRobot {
 		
 		m_chooser.addDefault("Default Auto - Sit there like nobody's business", kDefaultAuto);
 		m_chooser.addObject("Center Switch Auto", CenterSwitchAuto);
+		m_chooser.addObject("Left Side Cross Scale Auto", LeftSideCrossScale);
 		m_chooser.addObject("Right Side Scale", RightSideScale);
 		m_chooser.addObject("Left Side Scale", LeftSideScale);
 		m_chooser.addObject("Switch Right Side", RightSideSwitch);
@@ -104,17 +109,17 @@ public class Robot extends IterativeRobot {
 		m_chooser.addObject("Ten Feet Foward Auto", TenFeetForwardAuto);
 		m_chooser.addObject("Test Drop Inake", TestDropIntake);
 		//m_chooser.addObject("Shoot Cube Auto - Illegal", ShootCubeAuto);
-		//m_chooser.addObject("Turn Auto - Gyro Turn Testing", TurnAuto);
+		m_chooser.addObject("Turn Auto - Gyro Turn Testing", TurnAuto);
 		//m_chooser.addObject("Forward Range", ForwardRange);
 		SmartDashboard.putData("Auto choices", m_chooser);
 		
 		leaderMiddleRightDrive = new WPI_TalonSRX(15);
-		WPI_VictorSPX followerFrontRightDrive = new WPI_VictorSPX(16);
-		WPI_VictorSPX followerBackRightDrive = new WPI_VictorSPX(14);
+		followerFrontRightDrive = new WPI_VictorSPX(16);
+		followerBackRightDrive = new WPI_VictorSPX(14);
 		
 		leaderMiddleLeftDrive = new WPI_TalonSRX(2);
-		WPI_VictorSPX followerFrontLeftDrive = new WPI_VictorSPX(3);
-		WPI_VictorSPX followerBackLeftDrive = new WPI_VictorSPX(1);
+		followerFrontLeftDrive = new WPI_VictorSPX(3);
+		followerBackLeftDrive = new WPI_VictorSPX(1);
 		
 		
 		leaderMiddleRightDrive.configOpenloopRamp(0, 10);
@@ -301,6 +306,13 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
+		leaderMiddleRightDrive.setNeutralMode(driveNeutralMode);
+		followerFrontRightDrive.setNeutralMode(driveNeutralMode);
+		followerBackRightDrive.setNeutralMode(driveNeutralMode);
+		
+		leaderMiddleLeftDrive.setNeutralMode(driveNeutralMode);
+		followerFrontLeftDrive.setNeutralMode(driveNeutralMode);
+		followerBackLeftDrive.setNeutralMode(driveNeutralMode);
 		m_autoSelected = m_chooser.getSelected();
 		
 		String gameData = station.getGameSpecificMessage();		
@@ -448,6 +460,14 @@ public class Robot extends IterativeRobot {
 			case TenFeetForwardAuto:
 				move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 120.0, .75, minPower, .00004, 0.0000004, 0.000004, 150));
 				break;
+			case LeftSideCrossScale: //3/4 kP
+				move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 213.0, 1.0, .46,0.00004375,0.0,0.0,30));
+				//move.addSequential(new BrakeCommand(this.drive, 500));
+				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -89, .9, .4, 0.008, 0.0001, 0.0));
+				move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 188.0, 1.0, .46,0.000035,0.0,0.0,30));
+				//move.addSequential(new BrakeCommand(this.drive, 500));
+				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, .9, .4, 0.008, 0.0001, 0.0));
+				break;
 			case ShootCubeAuto:
 				move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 				move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));				
@@ -455,9 +475,21 @@ public class Robot extends IterativeRobot {
 				move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
 				break;
 			case TurnAuto:
-				//move.addSequential(new GyroTurnCommand(gyro2, drive, 90, .4, .2));
-				move.addSequential(new WaitCommand(1000));
-				//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
+				double minP = .455;
+				double maxP = .9;																//0.0002 //0.00009
+				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, maxP, minP, 0.01, 0.0, 0.0)); //0.000225, 0.0));
+				move.addSequential(new WaitCommand(500));
+				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 45, maxP, minP, 0.0175, 0.0, 0.0)); // 0.0003, 0.0));
+				move.addSequential(new WaitCommand(500));
+				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 45, maxP, minP, 0.0175, 0.0, 0.0));
+				move.addSequential(new WaitCommand(500));
+				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -90, maxP, minP, 0.01, 0.0, 0.0));
+				move.addSequential(new WaitCommand(500));
+				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -90, maxP, minP, 0.01, 0.0, 0.0));
+				move.addSequential(new WaitCommand(500));
+				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -180, maxP, .46, 0.008, 0.0, 0.0));
+				move.addSequential(new WaitCommand(500));
+				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 120, maxP, .46, 0.008, 0.0, 0.0));
 				break;
 			case ForwardRange:	
 				//move.addSequential(new RangeFinderMoveCommand(this.frontRangeFinder, this.drive, 22.0, .5, .3, false));
@@ -578,7 +610,18 @@ public class Robot extends IterativeRobot {
 		Scheduler.getInstance().run();
 	}
 
+	private double getAngle() {
+		double[] ypr = new double[3];
+		 pigeonGyro.getYawPitchRoll(ypr);
+		 return ypr[0];
+	}
+	
 	boolean startForward = true;
+	double bearing = 0;
+	
+	double kP = 0.02;
+	double kI = 0.0002;
+	double kD = 0;
 	
 	private void drive(double forward, double turn) {
 		if(Math.abs(turn)<.2 && Math.abs(forward)>.2) {
@@ -586,7 +629,17 @@ public class Robot extends IterativeRobot {
 				this.leaderMiddleLeftDrive.setSelectedSensorPosition(0, 0, 10);
 				this.leaderMiddleRightDrive.setSelectedSensorPosition(0, 0, 10);
 				startForward = false;
+				bearing = getAngle();
 			}
+			
+			//double error = bearing - getAngle();
+			
+			//double correct = kP * error;
+			/*
+			double powerRight = forward + correct;
+			double powerLeft = forward - correct;
+			*/
+			
 			
 			int left = this.leaderMiddleLeftDrive.getSelectedSensorPosition(0);
 			int right = -1*this.leaderMiddleRightDrive.getSelectedSensorPosition(0);
@@ -603,10 +656,14 @@ public class Robot extends IterativeRobot {
 			//SmartDashboard.putString("Diff L R", diffLeft + " " + diffRight);
 			//SmartDashboard.putString("Power L R", powerLeft + " " + powerRight);
 			
+			//SmartDashboard.putString("Drive Straight", "Bearing: " + bearing + "  Error: " + error + "  Left: " + powerLeft + "  Right: " + powerRight);
+			
+						
 			drive.tankDrive(powerLeft, powerRight);
 		} else {
 			drive.arcadeDrive(forward, turn);
 			startForward = true;
+			SmartDashboard.putString("Turn",""+turn);
 		}
 		//SmartDashboard.putBoolean("start forward", startForward);
 	}
