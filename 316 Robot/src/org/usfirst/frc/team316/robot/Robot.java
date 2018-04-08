@@ -17,6 +17,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -47,11 +48,14 @@ public class Robot extends IterativeRobot {
 	private static final String RightSideSwitch = "Switch Right Side";
 	private static final String LeftSideSwitch = "Switch Left Side";
 	private static final String LeftSideCrossScale = "Left Side Cross Scale";
+	private static final String RightSideCrossScale = "Right Side Cross Scale";
+	private static final String TwoScaleLeft = "Two Scale Left";
 	private static final String TenFeetForwardAuto = "Ten Forward Auto";
 	private static final String ShootCubeAuto = "Shoot Cube Auto";
 	private static final String TurnAuto = "Turn Auto";
 	private static final String ForwardRange = "Forward Range";
 	private static final String TestDropIntake = "Test Drop Intake";
+	private static final String TestDownUp = "Test Down Up Intake";
 	private String m_autoSelected;
 	private SendableChooser<String> m_chooser = new SendableChooser<>();
 	
@@ -102,11 +106,14 @@ public class Robot extends IterativeRobot {
 		m_chooser.addDefault("Default Auto - Sit there like nobody's business", kDefaultAuto);
 		m_chooser.addObject("Center Switch Auto", CenterSwitchAuto);
 		m_chooser.addObject("Left Side Cross Scale Auto", LeftSideCrossScale);
+		m_chooser.addObject("Right Side Cross Scale Auto", RightSideCrossScale);
 		m_chooser.addObject("Right Side Scale", RightSideScale);
 		m_chooser.addObject("Left Side Scale", LeftSideScale);
 		m_chooser.addObject("Switch Right Side", RightSideSwitch);
 		m_chooser.addObject("Switch Left Side", LeftSideSwitch);
+		m_chooser.addObject("Two Scale Left Side", TwoScaleLeft);
 		m_chooser.addObject("Ten Feet Foward Auto", TenFeetForwardAuto);
+		m_chooser.addObject("Test Down Up Intake", TestDownUp);
 		m_chooser.addObject("Test Drop Inake", TestDropIntake);
 		//m_chooser.addObject("Shoot Cube Auto - Illegal", ShootCubeAuto);
 		m_chooser.addObject("Turn Auto - Gyro Turn Testing", TurnAuto);
@@ -172,7 +179,7 @@ public class Robot extends IterativeRobot {
 		 
 		 //leaderElevator.config_kP(0, .13 , 10);
 		 
-		 leaderElevator.config_kP(0, .18 , 10);
+		 leaderElevator.config_kP(0, .25 , 10);
 		 leaderElevator.configAllowableClosedloopError(0, 200, 10);
 		 
 		 leaderIntake = new VictorSPX(11);
@@ -187,7 +194,9 @@ public class Robot extends IterativeRobot {
 		 
 		 this.leaderClimber = new VictorSPX(4);
 		 leaderClimber.setNeutralMode(driveNeutralMode);
-		 
+		 TalonSRX followerClimber = new TalonSRX(13);
+		 followerClimber.setNeutralMode(driveNeutralMode);
+		 followerClimber.follow(leaderClimber);
 		 
 		 elevatorButtomLimitSwitch = new DigitalInput(0);
 		 elevatorTopLimitSwitch = new DigitalInput(1);
@@ -245,9 +254,9 @@ public class Robot extends IterativeRobot {
 		//this.frontRangeFinder.setAutomaticMode(true);
 		this.rearRangeFinder.setAutomaticMode(true);
 		
-		//CameraServer.getInstance().startAutomaticCapture();
+		CameraServer.getInstance().startAutomaticCapture();
 		
-		this.pigeonGyro = new PigeonIMU(new TalonSRX(13));
+		this.pigeonGyro = new PigeonIMU(followerClimber);
 		
 	}
 
@@ -333,13 +342,16 @@ public class Robot extends IterativeRobot {
 		
 		switch(m_autoSelected) {
 			case CenterSwitchAuto:
+				move.addParallel(new TimeActivateIntakeCommand(this.leaderIntake, .5, 500, 13000));
 				move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
-				move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));
+				move.addSequential(new ElevatorAndGoCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));
 				if (allianceSwitch == 'R') {
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 36.0, .75, minPower));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 45.0, .6, minPower));
-					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 58.0, .5, .1, .0001, 0.00001, 0.0, 150));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -48.0, .5, minPower));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -45, .9, .455, 0.0175, 0.0001, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 45.0, .6, minPower));
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 54.0, .5, .1, .0001, 0.00001, 0.0, 150));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 45, .9, .455, 0.0175, 0.0001, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -48.0, .5, minPower));
 					//if(this.frontRangeFinder!=null) {
 					//	move.addSequential(new RangeFinderMoveCommand(this.frontRangeFinder, this.drive, 10.0, .5, .3, .0334, .000334, .00334, 2, false));
 					//} else {
@@ -350,9 +362,11 @@ public class Robot extends IterativeRobot {
 				} else if (allianceSwitch == 'L') {
 					//move.addParallel(new TimeActivateIntakeCommand(this.leaderIntake, .5, 500, 13000));
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 16.0, .75, minPower));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -48.0, .6, minPower));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 45, .9, .455, 0.0175, 0.0001, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -48.0, .6, minPower));
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 84.0, .5, minPower, .0001, 0.0, 0.0, 150));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 45.0, .5, minPower));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -45, .9, .455, 0.0175, 0.0001, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 45.0, .5, minPower));
 					//if(this.frontRangeFinder!=null) {
 					//	move.addSequential(new RangeFinderMoveCommand(this.frontRangeFinder, this.drive, 10.0, .5, .3, false, true));
 					//} else {
@@ -367,19 +381,23 @@ public class Robot extends IterativeRobot {
 					SmartDashboard.putString("Scale Switch", "Scale");
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 288.0, .75, minPower, .00007, 0.0, 0.0, 150));
 					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -85.0, .6, .6));
+																						//.9, .49, 0.01, 0.0002
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, .9, .49, 0.01, 0.0002, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -85.0, .6, .6));
 					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
 					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 23.0, .5, .4, 0.05, .0005, .005, 1, true));
 					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));			
 					move.addSequential(new WaitCommand(300));
+					move.addSequential(new RiseIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 30.0, .5, .4, true));		
 					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .8, 500));
 				} else if(allianceSwitch == 'R') {
 					SmartDashboard.putString("Scale Switch", "Switch");
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 154.0, .75, minPower, .00007, 0.0, 0.0, 150));
 					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -85.0, .6, .6));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, .9, .49, 0.008, 0.0001, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -85.0, .6, .6));
 					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
 					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));			
@@ -394,7 +412,8 @@ public class Robot extends IterativeRobot {
 					SmartDashboard.putString("Scale Switch", "Scale");
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 288.0, .75, minPower, .00007, 0.0, 0.0, 150));
 					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -90, .9, .49, 0.008, 0.0001, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
 					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
 					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 23.0, .5, .4, 0.05, .0005, .005, 1, true));
 					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
@@ -417,7 +436,8 @@ public class Robot extends IterativeRobot {
 					SmartDashboard.putString("Scale Switch", "Switch");
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 154.0, .75, minPower, .00007, 0.0, 0.0, 150));
 					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -90, .9, .49, 0.008, 0.0001, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
 					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
 					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));			
@@ -432,7 +452,8 @@ public class Robot extends IterativeRobot {
 					SmartDashboard.putString("Scale Switch", "Switch");
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 154.0, .75, minPower, .00007, 0.0, 0.0, 150));
 					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -85.0, .6, .6));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, .9, .49, 0.008, 0.0001, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -85.0, .6, .6));
 					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
 					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));			
@@ -447,7 +468,8 @@ public class Robot extends IterativeRobot {
 					SmartDashboard.putString("Scale Switch", "Switch");
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 154.0, .75, minPower, .00007, 0.0, 0.0, 150));
 					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
-					move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -90, .9, .49, 0.008, 0.0001, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
 					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
 					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));			
@@ -461,12 +483,73 @@ public class Robot extends IterativeRobot {
 				move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 120.0, .75, minPower, .00004, 0.0000004, 0.000004, 150));
 				break;
 			case LeftSideCrossScale: //3/4 kP
-				move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 213.0, 1.0, .46,0.00004375,0.0,0.0,30));
-				//move.addSequential(new BrakeCommand(this.drive, 500));
-				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -89, .9, .4, 0.008, 0.0001, 0.0));
-				move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 188.0, 1.0, .46,0.000035,0.0,0.0,30));
-				//move.addSequential(new BrakeCommand(this.drive, 500));
-				move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, .9, .4, 0.008, 0.0001, 0.0));
+				if(allianceScale == 'R') {																											//213//219				
+					move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 226.0, 1.0, .46,0.00004375,0.0,0.0,30));
+					//move.addSequential(new BrakeCommand(this.drive, 500));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -89, .9, .5, 0.01, 0.0002, 0.0));									//188//193
+					move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 190.0, 1.0, .46,0.000035,0.0,0.0,30));
+					//move.addSequential(new BrakeCommand(this.drive, 500));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, .9, .5, 0.01, 0.0001, 0.0));
+					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+					move.addSequential(new ElevatorAndGoCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));
+					move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 30.0, 1.0, .46,0.000035,0.0,0.0,30));
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
+				} else if(allianceScale == 'L') {
+					//move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 288.0, 1.0, .46,0.00004375,0.0,0.0,30));
+					//move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 45, .9, .4, 0.014, 0.0001, 0.0));
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 288.0, .75, minPower, .00007, 0.0, 0.0, 150));
+					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -90, .9, .49, 0.01, 0.0002, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
+					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 23.0, .5, .4, 0.05, .0005, .005, 1, true));
+					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));			
+					move.addSequential(new WaitCommand(300));
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 30.0, .5, .4, true));		
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .8, 500));
+				}
+				break;
+			case RightSideCrossScale: //3/4 kP
+				if(allianceScale == 'L') {																											//213//219				
+					move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 222.0, 1.0, .46,0.00004375,0.0,0.0,30));
+					//move.addSequential(new BrakeCommand(this.drive, 500));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 89, .9, .5, 0.01, 0.0001, 0.0));									//188//193
+					move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 190.0, 1.0, .46,0.000035,0.0,0.0,30));
+					//move.addSequential(new BrakeCommand(this.drive, 500));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -90, .9, .5, 0.01, 0.0001, 0.0));
+					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));
+					move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 36.0, 1.0, .46,0.000035,0.0,0.0,30));
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
+				} else if(allianceScale == 'R') {
+					//move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 288.0, 1.0, .46,0.00004375,0.0,0.0,30));
+					//move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 45, .9, .4, 0.014, 0.0001, 0.0));
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 288.0, .75, minPower, .00007, 0.0, 0.0, 150));
+					//move.addSequential(new GyroTurnCommand(gyro2, drive, -90, .4, .2));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, .9, .49, 0.008, 0.0001, 0.0));
+					//move.addSequential(new TurnCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 85.0, .6, .6));
+					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -10.0, .75, minPower));
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 23.0, .5, .4, 0.05, .0005, .005, 1, true));
+					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));			
+					move.addSequential(new WaitCommand(300));
+					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 30.0, .5, .4, true));		
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .8, 500));
+				}
+				break;
+			case TwoScaleLeft:
+				if(allianceScale == 'L') {
+					move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 249.0, 1.0, .46,0.00004375,0.0,0.0,30));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -45, .9, .455, 0.0175, 0.0001, 0.0));
+					move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));
+					move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 24.0, 1.0, .46,0.000035,0.0,0.0,30));
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
+					move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, -24.0, 1.0, .46,0.000035,0.0,0.0,30));
+					move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.BOTTOM_SET_POINT));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, .9, .49, 0.008, 0.0001, 0.0));
+				}
 				break;
 			case ShootCubeAuto:
 				move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
@@ -495,6 +578,13 @@ public class Robot extends IterativeRobot {
 				//move.addSequential(new RangeFinderMoveCommand(this.frontRangeFinder, this.drive, 22.0, .5, .3, false));
 			case TestDropIntake:
 				move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+				break;
+			case TestDownUp:
+				move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+				move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));			
+				move.addSequential(new RiseIntakeCommand(this.intakeSolenoid));
+				move.addSequential(new WaitCommand(1500));
+				move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .8, 500));
 				break;
 			default:
 		}

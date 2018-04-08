@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class ElevatorCommand extends Command {
+public class ElevatorAndGoCommand extends Command {
 
 	private boolean isFinished = false;
 	private TalonSRX motor;
@@ -22,7 +22,7 @@ public class ElevatorCommand extends Command {
 	public static final int SCALE_EVEN_SET_POINT = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * 65.0);
 	public static final int SCALE_DOWN_SET_POINT = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * 53.0);
 	
-	public ElevatorCommand(TalonSRX motor, DigitalInput top, DigitalInput bottom, int setPoint) {
+	public ElevatorAndGoCommand(TalonSRX motor, DigitalInput top, DigitalInput bottom, int setPoint) {
 		this.motor = motor;
 		this.top = top;
 		this.bottom = bottom;
@@ -55,22 +55,21 @@ public class ElevatorCommand extends Command {
 		if(bottom.get() && this.setPoint == BOTTOM_SET_POINT ) {
 			motor.setSelectedSensorPosition(0, 0, 10);
 			this.isFinished = true;
-			SmartDashboard.putBoolean("Elevator done:", isFinished);
 			return;
 		}
 
 		
 		motor.set(ControlMode.Position, setPoint);
 		
-		if(Math.abs(motor.getSelectedSensorPosition(0)-setPoint) < 200) {
+		/*if(Math.abs(motor.getSelectedSensorPosition(0)-setPoint) < 200) {
+			this.isFinished = true;
+		}*/
+		
+		
+		if(this.setPoint!= BOTTOM_SET_POINT) {
 			this.isFinished = true;
 		}
 		
-		
-		/*if(this.setPoint!= BOTTOM_SET_POINT) {
-			this.isFinished = true;
-		}*/
-		SmartDashboard.putString("Elevator Command Postion:", motor.getSelectedSensorPosition(0) +"");
 		SmartDashboard.putBoolean("Elevator done:", isFinished);
 		
 	}

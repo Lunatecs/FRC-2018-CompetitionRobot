@@ -25,7 +25,7 @@ public class PigeonTurnCommand extends Command {
 	private double Kd = 0.0;
 	private double Ki_temp = 0.0;
 	
-	private double tolerance = .1;
+	private double tolerance = .2;
 	
 	private double maxPower = 1.0;
 	private double minPower = 0.0;
