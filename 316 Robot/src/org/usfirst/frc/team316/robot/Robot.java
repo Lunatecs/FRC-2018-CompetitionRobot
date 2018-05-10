@@ -10,6 +10,7 @@ package org.usfirst.frc.team316.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.can.BaseMotorController;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
@@ -43,6 +44,7 @@ public class Robot extends IterativeRobot {
 	
 	private static final String kDefaultAuto = "Default";
 	private static final String CenterSwitchAuto = "Center Switch Auto";
+	private static final String NewCenterSwitchAuto = "New Center Switch Auto";
 	private static final String RightSideScale = "Right Side Scale";
 	private static final String LeftSideScale = "Left Side Scale";
 	private static final String RightSideSwitch = "Switch Right Side";
@@ -56,6 +58,9 @@ public class Robot extends IterativeRobot {
 	private static final String ForwardRange = "Forward Range";
 	private static final String TestDropIntake = "Test Drop Intake";
 	private static final String TestDownUp = "Test Down Up Intake";
+	private static final String NewLeftSideCrossScale = "New Left Side Cross Scale";
+	private static final String TestIntakePickup = "Test Intake Pickup";
+
 	private String m_autoSelected;
 	private SendableChooser<String> m_chooser = new SendableChooser<>();
 	
@@ -84,6 +89,7 @@ public class Robot extends IterativeRobot {
 	//DigitalInput elevatorTopLimitSwitch2;
 	DoubleSolenoid intakeSolenoid;
 	DoubleSolenoid grabberSolenoid;
+	DoubleSolenoid forkSolenoid;
 	
 	Ultrasonic rearRangeFinder;
 	//Ultrasonic frontRangeFinder;
@@ -105,6 +111,7 @@ public class Robot extends IterativeRobot {
 		
 		m_chooser.addDefault("Default Auto - Sit there like nobody's business", kDefaultAuto);
 		m_chooser.addObject("Center Switch Auto", CenterSwitchAuto);
+		m_chooser.addObject("New Center Switch Auto", NewCenterSwitchAuto);
 		m_chooser.addObject("Left Side Cross Scale Auto", LeftSideCrossScale);
 		m_chooser.addObject("Right Side Cross Scale Auto", RightSideCrossScale);
 		m_chooser.addObject("Right Side Scale", RightSideScale);
@@ -113,11 +120,13 @@ public class Robot extends IterativeRobot {
 		m_chooser.addObject("Switch Left Side", LeftSideSwitch);
 		m_chooser.addObject("Two Scale Left Side", TwoScaleLeft);
 		m_chooser.addObject("Ten Feet Foward Auto", TenFeetForwardAuto);
+		m_chooser.addObject("New Left Side Cross Scale Auto", NewLeftSideCrossScale);
 		m_chooser.addObject("Test Down Up Intake", TestDownUp);
 		m_chooser.addObject("Test Drop Inake", TestDropIntake);
 		//m_chooser.addObject("Shoot Cube Auto - Illegal", ShootCubeAuto);
 		m_chooser.addObject("Turn Auto - Gyro Turn Testing", TurnAuto);
 		//m_chooser.addObject("Forward Range", ForwardRange);
+		m_chooser.addObject("Test Intake Pickup", TestIntakePickup);
 		SmartDashboard.putData("Auto choices", m_chooser);
 		
 		leaderMiddleRightDrive = new WPI_TalonSRX(15);
@@ -198,6 +207,8 @@ public class Robot extends IterativeRobot {
 		 followerClimber.setNeutralMode(driveNeutralMode);
 		 followerClimber.follow(leaderClimber);
 		 
+		 leaderClimber.setInverted(true);
+		 
 		 elevatorButtomLimitSwitch = new DigitalInput(0);
 		 elevatorTopLimitSwitch = new DigitalInput(1);
 		 //elevatorTopLimitSwitch2 = new DigitalInput(2);
@@ -214,6 +225,7 @@ public class Robot extends IterativeRobot {
 		 
 		 this.intakeSolenoid = new DoubleSolenoid(0,1);
 		 this.grabberSolenoid = new DoubleSolenoid(2,3); 
+		 this.forkSolenoid = new DoubleSolenoid(4,5);
 		 
 		 this.leaderElevator.setSelectedSensorPosition(0, 0, 10);
 		 this.elevatorCommand = new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, 0);
@@ -257,6 +269,7 @@ public class Robot extends IterativeRobot {
 		CameraServer.getInstance().startAutomaticCapture();
 		
 		this.pigeonGyro = new PigeonIMU(followerClimber);
+		
 		
 	}
 
@@ -335,7 +348,7 @@ public class Robot extends IterativeRobot {
 		//firstCommand.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 		
 		
-		
+		//this.leaderIntake.set(ControlMode.Current, .1);
 		move = new CommandGroup();
 		//move.addParallel(firstCommand);
 		double minPower = .5;
@@ -391,7 +404,7 @@ public class Robot extends IterativeRobot {
 					move.addSequential(new WaitCommand(300));
 					move.addSequential(new RiseIntakeCommand(this.intakeSolenoid));
 					move.addSequential(new RangeFinderMoveCommand(this.rearRangeFinder, this.drive, 30.0, .5, .4, true));		
-					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .8, 500));
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .3, 500));
 				} else if(allianceSwitch == 'R') {
 					SmartDashboard.putString("Scale Switch", "Switch");
 					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 154.0, .75, minPower, .00007, 0.0, 0.0, 150));
@@ -551,6 +564,22 @@ public class Robot extends IterativeRobot {
 					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, .9, .49, 0.008, 0.0001, 0.0));
 				}
 				break;
+			case NewLeftSideCrossScale: //3/4 kP
+				if(allianceScale == 'R') {																											//213//219	//226			
+					move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 226.0, 1.0, .46,0.00004375,0.0,0.0,30));
+					move.addSequential(new PigeonTurnLiftAndGoCommand(pigeonGyro, drive, -89.0, .9, .6, 0.01, 0.0002, 0.0, 2.0,
+							this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, 190.0, 1.0, 0.46, 0.000035, 0.0, 0.0, 30));
+					
+					//move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -89, .9, .5, 0.01, 0.0002, 0.0));									//188//193
+					//move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 190.0, 1.0, .46,0.000035,0.0,0.0,30));
+
+					//move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 90, .9, .5, 0.01, 0.0001, 0.0));
+					//move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+					//move.addSequential(new ElevatorAndGoCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));
+					//move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 30.0, 1.0, .46,0.000035,0.0,0.0,30));
+					//move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));				
+				}
+				break;
 			case ShootCubeAuto:
 				move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
 				move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));				
@@ -586,6 +615,39 @@ public class Robot extends IterativeRobot {
 				move.addSequential(new WaitCommand(1500));
 				move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .8, 500));
 				break;
+			case TestIntakePickup:
+				move.addSequential(new GrabIntakeCommand(this.grabberSolenoid, true));
+				move.addSequential(new PigeonMoveCommand(this.pigeonGyro, this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 24.0, 1.0, .46,0.00004375,0.0,0.0,30));
+				move.addParallel(new ActivateIntakeCommand(this.leaderIntake, -1, 500));
+				move.addSequential(new GrabIntakeCommand(this.grabberSolenoid, false));
+				move.addSequential(new WaitCommand(500));
+				move.addSequential(new ElevatorCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SCALE_UP_SET_POINT));
+				break;
+			case NewCenterSwitchAuto:
+				move.addSequential(new LowerIntakeCommand(this.intakeSolenoid));
+				move.addSequential(new ElevatorAndGoCommand(this.leaderElevator, this.elevatorTopLimitSwitch, this.elevatorButtomLimitSwitch, ElevatorCommand.SWITCH_SET_POINT));
+				if (allianceSwitch == 'R') {
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 36.0, .75, minPower));
+					
+					move.addSequential(new PigeonTurnLiftAndGoCommand(pigeonGyro, drive, -45.0, .9, .455, 0.01, 0.0002, 0.0, 1.0,
+							this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, 54.0, 1.0, 0.46, 0.000035, 0.0, 0.0, 30));
+					
+					//move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -45, .9, .455, 0.0175, 0.0001, 0.0));
+					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 54.0, .5, .1, .0001, 0.00001, 0.0, 150));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 45, .9, .455, 0.0175, 0.0001, 0.0));
+					move.addSequential(new TimeMoveCommand(500,drive, -.8));
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
+				} else if (allianceSwitch == 'L') {
+					move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 16.0, .75, minPower));
+					move.addSequential(new PigeonTurnLiftAndGoCommand(pigeonGyro, drive, 45.0, .9, .6, 0.01, 0.0002, 0.0, 1.0,
+							this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, 84.0, 1.0, 0.46, 0.000035, 0.0, 0.0, 30));
+					//move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, 45, .9, .455, 0.0175, 0.0001, 0.0));
+					//move.addSequential(new MoveCommand(this.leaderMiddleLeftDrive, this.leaderMiddleRightDrive, this.drive, 84.0, .5, minPower, .0001, 0.0, 0.0, 150));
+					move.addSequential(new PigeonTurnCommand(pigeonGyro, drive, -45, .9, .455, 0.0175, 0.0001, 0.0));
+					move.addSequential(new TimeMoveCommand(500,drive, -.8));
+					move.addSequential(new ActivateIntakeCommand(this.leaderIntake, .5, 500));
+				}
+				break;	
 			default:
 		}
 		move.start();
@@ -622,6 +684,16 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		drive(joyStick.getRawAxis(1), joyStick.getRawAxis(4));
+		
+		SmartDashboard.putString("POV", this.opJoyStick.getPOV() + "");
+		
+		if(this.opJoyStick.getPOV() == 180 && this.joyStick.getPOV() == 180) {
+			forkSolenoid.set(DoubleSolenoid.Value.kForward);
+		} else if(this.opJoyStick.getPOV() == 0 ) {
+			this.forkSolenoid.set(DoubleSolenoid.Value.kReverse);
+		} else {
+			this.forkSolenoid.set(DoubleSolenoid.Value.kOff);
+		}
 		
 		//green button
 		if(this.opJoyStick.getRawButton(1)) {
@@ -676,8 +748,15 @@ public class Robot extends IterativeRobot {
 			this.leaderIntake.set(ControlMode.PercentOutput, 0);
 		}
 		
-		if(Math.abs(this.opJoyStick.getRawAxis(1)) < .2 && !elevatorCommand.isRunning() || (this.elevatorTopLimitSwitch.get() && this.opJoyStick.getRawAxis(1) < .2)) {
+		SmartDashboard.putString("Button Set Slow", ElevatorCommand.SCALE_BUTTOM_SLOW_DOWN + "");
+		SmartDashboard.putBoolean("Are we Lower then Buuton Set Slow", this.leaderElevator.getSelectedSensorPosition(0) < ElevatorCommand.SCALE_BUTTOM_SLOW_DOWN);
+		SmartDashboard.putBoolean("Are we going down", this.opJoyStick.getRawAxis(1) > .2);
+		
+		if(Math.abs(this.opJoyStick.getRawAxis(1)) < .2 && !elevatorCommand.isRunning() || 
+				(this.elevatorTopLimitSwitch.get() && this.opJoyStick.getRawAxis(1) < .2) || 
+				(this.elevatorButtomLimitSwitch.get() && this.opJoyStick.getRawAxis(1) > -.2)) {
 			this.leaderElevator.set(ControlMode.PercentOutput, 0);
+			SmartDashboard.putBoolean("Slowing Down", false);
 		} else if(Math.abs(this.opJoyStick.getRawAxis(1)) > .2) {
 			elevatorCommand.cancel();
 			/*if(!this.elevatorTopLimitSwitch2.get() && this.opJoyStick.getRawAxis(1) < -.2) {
@@ -685,12 +764,16 @@ public class Robot extends IterativeRobot {
 			 } else {
 				 this.leaderElevator.set(ControlMode.PercentOutput, -this.opJoyStick.getRawAxis(1));
 			 }*/
-			if(this.leaderElevator.getSelectedSensorPosition(0) > ElevatorCommand.SCALE_UP_SET_POINT && this.opJoyStick.getRawAxis(1) < -.2) {
+			if(this.leaderElevator.getSelectedSensorPosition(0) > ElevatorCommand.SCALE_TOP_SLOW_DOWN && this.opJoyStick.getRawAxis(1) < -.2) {
 				this.leaderElevator.set(ControlMode.PercentOutput, .25);
+			} else if(this.leaderElevator.getSelectedSensorPosition(0) < ElevatorCommand.SCALE_BUTTOM_SLOW_DOWN && this.opJoyStick.getRawAxis(1) > .2) {
+				SmartDashboard.putBoolean("Slowing Down", true);	
+				this.leaderElevator.set(ControlMode.PercentOutput, -.2);
 			} else {
 				this.leaderElevator.set(ControlMode.PercentOutput, -this.opJoyStick.getRawAxis(1));
 			}
 		}
+		
 		/*if(Math.abs(this.opJoyStick.getRawAxis(1))>.2) {
 			this.leaderElevator.set(ControlMode.PercentOutput, -this.opJoyStick.getRawAxis(1));
 		} else {

@@ -13,10 +13,17 @@ public class TimeMoveCommand extends Command {
 	private boolean isFinished = false;
 	private int milliSeconds;
 	DifferentialDrive drive;
+	private double go = -.5;
 	
 	public TimeMoveCommand(int milliSeconds, DifferentialDrive drive) {
 		this.milliSeconds = milliSeconds;
 		this.drive = drive;
+	}
+	
+	public TimeMoveCommand(int milliSeconds, DifferentialDrive drive, double go) {
+		this.milliSeconds = milliSeconds;
+		this.drive = drive;
+		this.go = go;
 	}
 	
 	@Override
@@ -34,7 +41,7 @@ public class TimeMoveCommand extends Command {
 			return;
 		}
 		
-		drive.tankDrive(-.5, -.5);
+		drive.tankDrive(go, go);
 		
 	}
 	

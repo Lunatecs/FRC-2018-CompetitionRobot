@@ -21,6 +21,8 @@ public class ElevatorCommand extends Command {
 	public static final int SCALE_UP_SET_POINT = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * RobotConstants.TOP_ELEVATOR_HEIGHT);
 	public static final int SCALE_EVEN_SET_POINT = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * 65.0);
 	public static final int SCALE_DOWN_SET_POINT = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * 53.0);
+	public static final int SCALE_TOP_SLOW_DOWN = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * 60.0);
+	public static final int SCALE_BUTTOM_SLOW_DOWN = (int)(RobotConstants.TICS_PER_ELEVATOR_INCH * 26.0);
 	
 	public ElevatorCommand(TalonSRX motor, DigitalInput top, DigitalInput bottom, int setPoint) {
 		this.motor = motor;
